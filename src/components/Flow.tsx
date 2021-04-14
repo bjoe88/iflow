@@ -2,6 +2,8 @@ import React, { MouseEvent } from 'react'
 import Components from "./FlowComponent";
 import FlowGrid from "./FlowComponents/FlowGrid";
 import { v4 as uuidv4 } from 'uuid';
+import './Flow.css';
+
 interface IProps {
 }
 
@@ -22,6 +24,7 @@ interface IState {
 const data = [
   {
     _uid: uuidv4(),
+    selected: false,
     component: "foo",
     title: "Foo",
     x: 50,
@@ -29,15 +32,17 @@ const data = [
   },
   {
     _uid: uuidv4(),
-    component: "bar",
-    title: "Bar",
+    selected: false,
+    component: "event",
+    title: "Event",
     x: 50,
     y: 200,
   },
   {
     _uid: uuidv4(),
-    component: "bar",
-    title: "Bar",
+    selected: false,
+    component: "foo",
+    title: "Foo",
     x: 400,
     y: 300,
     linkFrom: [1]
@@ -119,7 +124,6 @@ class Flow extends React.Component<IProps, IState>  {
     }
   }
   getState() {
-    console.log(this)
     return this
   }
 
@@ -173,18 +177,38 @@ class Flow extends React.Component<IProps, IState>  {
       }
     }
     const mouseUp = (e: MouseEvent) => {
+      console.log("mouse up", e.button)
       if (e.button === 2) {
         this.setState({
           ...this.state,
           targetType: "",
           cursor: "default"
         })
+      } else if (e.button === 0) {
+        const data = [...this.state.data];
+        data.forEach((ele) => {
+          ele.selected = false;
+        })
+        this.setState({
+          ...this.state,
+          data,
+          targetType: "",
+          cursor: "default"
+        })
       }
     }
     const svgMouseDown = (e: MouseEvent, i: number) => {
+      e.preventDefault()
+      e.stopPropagation()
       if (e.button === 0) {
+        const data = [...this.state.data];
+        data.forEach((ele) => {
+          ele.selected = false;
+        })
+        data[i].selected = true;
         this.setState({
           ...this.state,
+          data,
           targetType: "svgElement",
           targetItem: this.state.data[i],
           targetNumber: i,
@@ -194,6 +218,8 @@ class Flow extends React.Component<IProps, IState>  {
       }
     }
     const svgMouseUp = (e: React.MouseEvent, i: number) => {
+      e.preventDefault()
+      e.stopPropagation()
       if (e.button === 0) {
         this.setState({
           ...this.state,
@@ -204,11 +230,7 @@ class Flow extends React.Component<IProps, IState>  {
       }
     }
     return (
-      <div style={{
-        width: "100",
-        height: "100vh",
-        overflow: "hidden",
-        background: "red",
+      <div className="Flow" style={{
         cursor: this.state.cursor,
       }}
         onContextMenu={(e) => e.preventDefault()}

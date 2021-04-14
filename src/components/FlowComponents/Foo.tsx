@@ -1,4 +1,4 @@
-import './Bar.css';
+import './Foo.css';
 import React, { MouseEventHandler } from "react";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,6 +16,7 @@ const Foo = props => {
   if ((!props.block.linkFrom || props.block.linkFrom?.length === 0) && props.drawType === "line") {
     return (null)
   }
+
   return (
     <g
       className="Foo"
@@ -63,7 +64,7 @@ const Foo = props => {
           </foreignObject>
 
 
-          {!!props.selected &&
+          {!!props.block.selected &&
             <rect
               x={x - 1}
               y={y - 1}
@@ -94,8 +95,10 @@ const Foo = props => {
         const mid = { x: Math.floor((start.x + end.x) / 2), y: Math.floor((start.y + end.y) / 2) }
         const preMid = { x: start.x + 10 + Math.floor((end.x - start.x) / 2), y: start.y + Math.floor((end.y - start.y) * 1 / 10) }
         const postMid = { x: end.x - 10 - Math.floor((end.x - start.x) / 2), y: end.y - Math.floor((end.y - start.y) * 1 / 10) }
+        if( preMid.x < start.x + 30) preMid.x = start.x + 30;
+        if( postMid.x > end.x - 30) postMid.x = end.x - 30;
         const paths = `M ${start.x} ${start.y} Q ${preMid.x} ${preMid.y} ${mid.x} ${mid.y} Q ${postMid.x} ${postMid.y} ${end.x} ${end.y}`
-        return <path key={uuidv4()} d={paths} fill="none" stroke="blue" strokeMiterlimit="10" pointerEvents="stroke" strokeWidth="3"></path>
+        return <path key={uuidv4()} d={paths} fill="none" stroke="blue" strokeMiterlimit="10" pointerEvents="stroke" strokeWidth="2"></path>
       })}
     </g>
   )
