@@ -1,11 +1,11 @@
 import React from "react";
 import Foo from "./FlowComponents/Foo";
-import Bar from "./FlowComponents/Bar";
+import Event from "./FlowComponents/Event";
 import { v4 as uuidv4 } from 'uuid';
 
 const Components = {
   foo: Foo,
-  bar: Bar
+  event: Event
 };
 
 // eslint-disable-next-line import/no-anonymous-default-export
