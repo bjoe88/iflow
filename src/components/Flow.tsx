@@ -10,14 +10,14 @@ import Base from './FlowComponents/Base';
 interface IProps {
 }
 
+interface Transform {
+  scale: number,
+  translate: {
+    x: number,
+    y: number
+  }
+}
 interface IState {
-  transform: {
-    scale: number,
-    translate: {
-      x: number,
-      y: number
-    }
-  },
   targetType: string;
   targetItem: any;
   targetNumber: number;
@@ -61,6 +61,7 @@ const data: FlowElement[] = [
     linkFrom: [1]
   }
 ]
+
 function ComponentMapping(componentName: string) {
   switch (componentName.toLowerCase()) {
     case "job":
@@ -84,17 +85,18 @@ class Flow extends React.Component<IProps, IState>  {
   svgHeight = this.gridSizePerField;
   svgWidth = this.gridSizePerField;
   data: FlowElement[];
+  transform: Transform;
   constructor(props: IProps) {
     super(props);
     this.data = data;
+    this.transform = {
+      scale: 1,
+      translate: {
+        x: 0,
+        y: 0,
+      }
+    };
     this.state = {
-      transform: {
-        scale: 1,
-        translate: {
-          x: 0,
-          y: 0,
-        }
-      },
       targetType: "",
       targetItem: null,
       targetNumber: 0,
@@ -152,50 +154,47 @@ class Flow extends React.Component<IProps, IState>  {
       if (startY < 0) { data[i].y += this.gridSizePerField }
       else if (startY > this.gridSizePerField) { data[i].y -= this.gridSizePerField }
     }
-    let newX = this.state.transform.translate.x
-    let newY = this.state.transform.translate.y
+    let newX = this.transform.translate.x
+    let newY = this.transform.translate.y
     if (startX < 0 || startY < 0 || // Element start before grid
       startX > this.gridSizePerField || startY > this.gridSizePerField || // Element start after next grid
       endX > this.svgWidth || endY > this.svgHeight || // Element end after next grid
       endX < this.svgWidth - this.gridSizePerField || endY < this.svgHeight - this.gridSizePerField) { // element end before next grid
-      const offSetByWidth = ((1 - this.state.transform.scale) * this.gridSizePerField / 2)
-      const offSetByHeight = ((1 - this.state.transform.scale) * this.gridSizePerField / 2)
+      const offSetByWidth = ((1 - this.transform.scale) * this.gridSizePerField / 2)
+      const offSetByHeight = ((1 - this.transform.scale) * this.gridSizePerField / 2)
       if (startX < 0 || endX > this.svgWidth) {
         this.svgWidth += this.gridSizePerField;
-        newX = this.state.transform.translate.x - offSetByWidth
-        if (startX < 0) newX -= (this.gridSizePerField * this.state.transform.scale)
+        newX = this.transform.translate.x - offSetByWidth
+        if (startX < 0) newX -= (this.gridSizePerField * this.transform.scale)
       }
       else if (startX > this.gridSizePerField || endX < this.svgWidth - this.gridSizePerField) {
         this.svgWidth -= this.gridSizePerField;
-        newX = this.state.transform.translate.x + offSetByWidth
-        if (startX > this.gridSizePerField) newX += (this.gridSizePerField * this.state.transform.scale)
+        newX = this.transform.translate.x + offSetByWidth
+        if (startX > this.gridSizePerField) newX += (this.gridSizePerField * this.transform.scale)
       }
       if (startY < 0 || endY > this.svgHeight) {
         this.svgHeight += this.gridSizePerField;
-        newY = this.state.transform.translate.y - offSetByHeight
-        if (startY < 0) newY -= (this.gridSizePerField * this.state.transform.scale)
+        newY = this.transform.translate.y - offSetByHeight
+        if (startY < 0) newY -= (this.gridSizePerField * this.transform.scale)
       }
       else if (startY > this.gridSizePerField || endY < this.svgHeight - this.gridSizePerField) {
         this.svgHeight -= this.gridSizePerField;
-        newY = this.state.transform.translate.y + offSetByHeight
-        if (startY > this.gridSizePerField) newY += (this.gridSizePerField * this.state.transform.scale)
+        newY = this.transform.translate.y + offSetByHeight
+        if (startY > this.gridSizePerField) newY += (this.gridSizePerField * this.transform.scale)
       }
       const matrix = new DOMMatrixReadOnly();
-      const scaledMatrix = matrix.scale(this.state.transform.scale).translate(newX / this.state.transform.scale, newY / this.state.transform.scale);
+      const scaledMatrix = matrix.scale(this.transform.scale).translate(newX / this.transform.scale, newY / this.transform.scale);
       const svg = this.domElement.current?.firstChild as unknown as HTMLElement & SVGSVGElement;
       svg.setAttribute('transform', scaledMatrix.toString());
     }
     this.data = data;
-    this.setState({
-      ...this.state,
-      transform: {
-        ...this.state.transform,
-        translate: {
-          x: newX,
-          y: newY
-        }
-      },
-    });
+    this.transform = {
+      ...this.transform,
+      translate: {
+        x: newX,
+        y: newY
+      }
+    }
   }
 
   updateSvg() {
@@ -256,40 +255,33 @@ class Flow extends React.Component<IProps, IState>  {
       e.preventDefault();
       const svg = this.domElement.current?.firstChild as unknown as HTMLElement & SVGSVGElement;
       if (!svg) return;
-      const moveX = e.clientX - this.mousePosition.x;
-      const moveY = e.clientY - this.mousePosition.y;
+      const deltaX = e.clientX - this.mousePosition.x;
+      const deltaY = e.clientY - this.mousePosition.y;
       this.mousePosition.x = e.clientX;
       this.mousePosition.y = e.clientY;
-      const newX = this.state.transform.translate.x + (moveX);
-      const newY = this.state.transform.translate.y + (moveY);
+      const newX = this.transform.translate.x + (deltaX);
+      const newY = this.transform.translate.y + (deltaY);
       const matrix = new DOMMatrixReadOnly();
-      const scaledMatrix = matrix.scale(this.state.transform.scale).translate(newX / this.state.transform.scale, newY / this.state.transform.scale);
+      const scaledMatrix = matrix.scale(this.transform.scale).translate(newX / this.transform.scale, newY / this.transform.scale);
       svg.setAttribute('transform', scaledMatrix.toString());
-      this.setState({
-        ...this.state,
-        transform: {
-          ...this.state.transform,
-          translate: {
-            x: newX,
-            y: newY
-          }
+      this.transform = {
+        ...this.transform,
+        translate: {
+          x: newX,
+          y: newY
         }
-      });
+      }
     }
     else if (e.buttons === 1 && this.state.targetType === "svgElement") {
       e.stopPropagation();
       e.preventDefault();
-      const moveX = e.clientX - this.mousePosition.x;
-      const moveY = e.clientY - this.mousePosition.y;
       const i = this.state.targetNumber;
+      const deltaX = e.clientX - this.mousePosition.x;
+      const deltaY = e.clientY - this.mousePosition.y;
       this.mousePosition.x = e.clientX;
       this.mousePosition.y = e.clientY;
-      const newX = this.data[i].x + (moveX / this.state.transform.scale);
-      const newY = this.data[i].y + (moveY / this.state.transform.scale);
-      const data = [...this.data]
-      data[i].x = newX;
-      data[i].y = newY;
-      this.data = data;
+      this.data[i].x = this.data[i].x + (deltaX / this.transform.scale)
+      this.data[i].y = this.data[i].y + (deltaY / this.transform.scale)
       this.drawSvgElement()
     }
   }
@@ -333,13 +325,13 @@ class Flow extends React.Component<IProps, IState>  {
   wheelScroll(e) {
     const svg = this.domElement.current?.firstChild as unknown as HTMLElement & SVGSVGElement;
     const delta = e.deltaY;
-    const newX = this.state.transform.translate.x;
-    const newY = this.state.transform.translate.y;
+    const newX = this.transform.translate.x;
+    const newY = this.transform.translate.y;
     const matrix = new DOMMatrixReadOnly();
-    const zoomScale = this.state.transform.scale * Math.pow(1.2, delta / 360);
+    const zoomScale = this.transform.scale * Math.pow(1.2, delta / 360);
     const screenTopLeft = {
-      x: (svg.width.baseVal.value / 2) + this.state.transform.translate.x,
-      y: (svg.width.baseVal.value / 2) + this.state.transform.translate.y
+      x: (svg.width.baseVal.value / 2) + this.transform.translate.x,
+      y: (svg.width.baseVal.value / 2) + this.transform.translate.y
     }
     const mousePosition = {
       x: e.pageX,
@@ -347,23 +339,20 @@ class Flow extends React.Component<IProps, IState>  {
     }
     const mousePosFromCenterX = screenTopLeft.x - mousePosition.x
     const mousePosFromCenterY = screenTopLeft.y - mousePosition.y
-    const deltaMouseX = (mousePosFromCenterX / zoomScale) - (mousePosFromCenterX / this.state.transform.scale)
-    const deltaMouseY = (mousePosFromCenterY / zoomScale) - (mousePosFromCenterY / this.state.transform.scale)
+    const deltaMouseX = (mousePosFromCenterX / zoomScale) - (mousePosFromCenterX / this.transform.scale)
+    const deltaMouseY = (mousePosFromCenterY / zoomScale) - (mousePosFromCenterY / this.transform.scale)
     const scaledMatrix = matrix
       .scale(zoomScale)
       .translate((newX / zoomScale) - deltaMouseX, (newY / zoomScale) - deltaMouseY);
 
-    this.setState({
-      ...this.state,
-      transform: {
-        ...this.state.transform,
-        translate: {
-          x: newX - (deltaMouseX * zoomScale),
-          y: newY - (deltaMouseY * zoomScale),
-        },
-        scale: zoomScale
-      }
-    });
+    this.transform = {
+      ...this.transform,
+      translate: {
+        x: newX - (deltaMouseX * zoomScale),
+        y: newY - (deltaMouseY * zoomScale),
+      },
+      scale: zoomScale
+    }
     svg.setAttribute('transform', scaledMatrix.toString());
   }
 
