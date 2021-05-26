@@ -3,6 +3,7 @@ import { Svg, SVG } from '@svgdotjs/svg.js'
 
 import Event from "./FlowComponents/Event";
 import Job from "./FlowComponents/Job";
+import { ComponenentData, ComponenentElementData } from "./FlowComponents/Base"
 import { v4 as uuidv4 } from 'uuid';
 import './Flow.css';
 import Base from './FlowComponents/Base';
@@ -24,17 +25,7 @@ interface IState {
   cursor: string;
 }
 
-interface FlowElement {
-  _uid: string,
-  selected: boolean,
-  component: "event" | "job",
-  title: string,
-  x: number,
-  y: number,
-  linkFrom?: number[]
-}
-
-const data: FlowElement[] = [
+const data: ComponenentElementData[] = [
   {
     _uid: uuidv4(),
     selected: false,
@@ -84,7 +75,7 @@ class Flow extends React.Component<IProps, IState>  {
   gridSizePerField = 500;
   svgHeight = this.gridSizePerField;
   svgWidth = this.gridSizePerField;
-  data: FlowElement[];
+  data: ComponenentElementData[];
   transform: Transform;
   constructor(props: IProps) {
     super(props);
@@ -206,7 +197,7 @@ class Flow extends React.Component<IProps, IState>  {
 
   drawElement() {
     this.data.forEach((block, i) => {
-      const data = {
+      const data: ComponenentData = {
         drawType: "element",
         block,
         event: {
@@ -226,10 +217,9 @@ class Flow extends React.Component<IProps, IState>  {
 
   drawLine() {
     this.data.forEach((block, i) => {
-      const data = {
+      const data: ComponenentData = {
         drawType: "line",
         block,
-        getState: () => this.state,
         getData: () => this.data,
       }
       if (this.elementList.line[i]) {
