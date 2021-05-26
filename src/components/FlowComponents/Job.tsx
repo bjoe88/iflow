@@ -1,15 +1,15 @@
 import { G } from '@svgdotjs/svg.js'
 import Base from './Base';
-class Event extends Base {
+class Job extends Base {
   static readonly MetaData = {
     ...Base.MetaData,
-    width: 119,
-    height: 59,
-    radius: 10
+    width: 229,
+    height: 99,
+    radius: 10,
   };
 
   getMetaData() {
-    return Event.MetaData;
+    return Job.MetaData;
   }
 }
-export default Event
+export default Job
