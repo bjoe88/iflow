@@ -1,4 +1,3 @@
-import { G } from '@svgdotjs/svg.js'
 import Base from './Base';
 class Event extends Base {
   static readonly MetaData = {
